@@ -1,0 +1,24 @@
+{
+  "name": "soundtrackboxbackend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^8.2.0",
+    "express": "~4.16.1",
+    "express-user-management": "^1.6.1",
+    "http-errors": "~1.6.3",
+    "jsonwebtoken": "^8.5.1",
+    "mobile-detect": "^1.4.4",
+    "mongoose": "^5.11.17",
+    "morgan": "~1.9.1",
+    "pug": "2.0.0-beta11"
+  }
+}
