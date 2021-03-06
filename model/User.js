@@ -1,4 +1,6 @@
+const { required } = require('@hapi/joi');
 const mongoose = require('mongoose');
+const PlaylistSchema = require('../model/Playlist').schema;
 
 const userSchema = new mongoose.Schema({
 email: {
@@ -16,7 +18,8 @@ password: {
 date: {
     type: Date,
     default: Date.now
-}
+},
+musicCollection: [PlaylistSchema]
 });
 
 module.exports = mongoose.model('User', userSchema);

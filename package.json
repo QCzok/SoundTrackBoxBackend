@@ -19,6 +19,20 @@
     "mobile-detect": "^1.4.4",
     "mongoose": "^5.11.17",
     "morgan": "~1.9.1",
-    "pug": "2.0.0-beta11"
-  }
+    "multer": "^1.4.2",
+    "pug": "^3.0.2"
+  },
+  "main": "app.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QCzok/SoundTrackBoxBackend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/QCzok/SoundTrackBoxBackend/issues"
+  },
+  "homepage": "https://github.com/QCzok/SoundTrackBoxBackend#readme",
+  "description": ""
 }

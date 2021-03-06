@@ -11,16 +11,22 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var posts = require('./routes/posts');
+var media = require('./routes/media');
+const { db } = require('./model/Song');
 
 var app = express();
 
 dotenv.config();
 
 // connect to db
-mongoose.connect(process.env.DB_CONNECT, {useNewUrlParser: true, useUnifiedTopology: true}).then(
-  () => { console.log('connected to db!') },
-  err => { next(err) }
-);
+try {
+  mongoose.connect(process.env.DB_CONNECT, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}).then(
+    () => { console.log('connected to mongodb');},
+    err => { next(err) }
+  );
+} catch (error) {
+  next(error);
+}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -38,6 +44,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/user', authRouter);
 app.use('/api/posts', posts);
+app.use('/media', media);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
