@@ -5,17 +5,13 @@ var uploadSong = require('../uploadSong');
 const User = require('../model/User');
 const Playlist = require('../model/Playlist');
 const Song = require('../model/Song');
-const { isValidObjectId } = require('mongoose');
-const multer = require('multer');
-const { Readable } = require('stream');
-const mongodb = require('mongodb');
 var mongoose = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
 
 
 router.get('/loadMusicCollection', verify, async function (req, res, next) {
     try {
-        const musicCollection = await User.findOne({ _id: req.user }, { musicCollection: 1, _id: 0 })
+        await User.findOne({ _id: req.user }, { musicCollection: 1, _id: 0 })
             .then((musicCollection) => res.send(musicCollection));
     } catch (error) {
         res.status(400).send(error);
@@ -31,7 +27,7 @@ router.post('/addPlaylist', verify, async function (req, res, next) {
         });
 
 
-        var result = await User.findOneAndUpdate(
+        await User.findOneAndUpdate(
             { _id: req.user },
             {
                 $addToSet:
@@ -56,7 +52,7 @@ router.post('/addSong', verify, uploadSong, async function (req, res, next) {
             songID: req.songID
         });
 
-        var result = await User.findOneAndUpdate(
+        await User.findOneAndUpdate(
             {
                 _id: req.user,
                 "musicCollection.name": req.playlistName
@@ -83,7 +79,7 @@ router.post('/deleteSong', verify, async function (req, res, next) {
         });
         bucket.delete(ObjectID(req.body.songID));
 
-        var result = await User.findOneAndUpdate(
+        await User.findOneAndUpdate(
             {
                 _id: req.user,
                 "musicCollection.name": req.body.playlistName
@@ -112,7 +108,7 @@ router.post('/deletePlaylist', verify, async function (req, res, next) {
             bucket.delete(ObjectID(element.songID));
         });
 
-        var result = await User.findOneAndUpdate(
+        await User.findOneAndUpdate(
             {
                 _id: req.user
             },
@@ -131,34 +127,33 @@ router.post('/deletePlaylist', verify, async function (req, res, next) {
 });
 
 
-router.get('/getSongFile', verify, (req, res, next) => {
+router.get('/getSongFile', (req, res, next) => {
+    try {
+        var trackID = ObjectID(req.query.songID);
+        res.set('content-type', 'audio/mp3');
+        res.set('accept-ranges', 'bytes');
 
-    console.log(req.body.songID)
-    var trackID = ObjectID(req.body.songID);
+        let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: 'tracks'
+        });
 
-    console.log(trackID);
+        let downloadStream = bucket.openDownloadStream(trackID);
 
-    res.set('content-type', 'audio/mp3');
-    res.set('accept-ranges', 'bytes');
+        downloadStream.on('data', (chunk) => {
+            res.write(chunk);
+        });
 
-    let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-        bucketName: 'tracks'
-    });
+        downloadStream.on('error', () => {
+            res.sendStatus(404);
+            console.log('an error occured');
+        });
 
-    let downloadStream = bucket.openDownloadStream(trackID);
-
-    downloadStream.on('data', (chunk) => {
-        res.write(chunk);
-    });
-
-    downloadStream.on('error', () => {
-        res.sendStatus(404);
-        console.log('an error occured');
-    });
-
-    downloadStream.on('end', () => {
-        res.end();
-    });
+        downloadStream.on('end', () => {
+            res.end();
+        });
+    } catch (error) {
+        console.log(error);
+    }
 })
 
 module.exports = router;

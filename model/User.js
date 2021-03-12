@@ -15,6 +15,10 @@ password: {
     max: 1024,
     min: 6
 },
+status: {
+    type: String,
+    default: "pending",
+},
 date: {
     type: Date,
     default: Date.now
