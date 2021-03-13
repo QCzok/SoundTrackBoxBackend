@@ -9,6 +9,6 @@ const playlist = new mongoose.Schema({
         min: 1
     },
     songList: [SongSchema]
-}, { _id : false })
+}, { _id : true })
 
 module.exports = mongoose.model('Playlist', playlist);

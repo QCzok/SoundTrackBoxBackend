@@ -1,45 +1,31 @@
-var mongoose = require('mongoose');
+var ObjectID = require('mongodb').ObjectID;
 const multer = require('multer');
-const { Readable } = require('stream');
+const fs = require('fs');
 
 module.exports = (req, res, next) => {
-
     try {
         const storage = multer.memoryStorage()
-        const upload = multer({ storage: storage, limits: { fields: 2, fileSize: 16000000, files: 1, parts: 3 } });
+        const upload = multer({ storage: storage, limits: { fields: 4, fileSize: 16000000, files: 1} });
         upload.single('track')(req, res, (err) => {
-            if (err) {
-                console.log(err);
-                return res.status(400).json({ message: "Upload Request Validation Failed" });
-            } else if (!req.body.songName) {
-                console.log('no name added')
-                return res.status(400).json({ message: "No track name in request body" });
+            var folderPath = '/home/jan/soundtrackbox/audio/' + req.user._id + '/' + req.body.playlistID;
+            req.songID = new ObjectID();
+            req.filePath = folderPath + '/' + req.songID + '.mp3';
+            try {
+                try {
+                    if (!fs.existsSync(folderPath)) {
+                      fs.mkdirSync(folderPath, { recursive: true })
+                    }
+                  } catch (err) {
+                    console.error(err)
+                  }
+                fs.writeFile(req.filePath, req.file.buffer, err => {
+                    console.log('written');
+                });
+            } catch (error) {
+                console.log(error);
+                next(error);
             }
-            let trackName = req.body.songName;
-
-            // Convert buffer to Readable Stream
-            const readableTrackStream = new Readable();
-            readableTrackStream.push(req.file.buffer);
-            readableTrackStream.push(null);
-
-            let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-                bucketName: 'tracks'
-            });
-
-            let uploadStream = bucket.openUploadStream(trackName);
-            let id = uploadStream.id;
-            readableTrackStream.pipe(uploadStream);
-
-            uploadStream.on('error', () => {
-                return res.status(500).json({ message: "Error uploading file" });
-            });
-
-            uploadStream.on('finish', () => {
-                req.songID = id;
-                req.playlistName = req.body.playlistName;
-                console.log('this worked');
-                next();
-            });
+            next();
         });
 
     } catch (error) {

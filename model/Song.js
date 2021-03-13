@@ -1,16 +1,20 @@
 const mongoose = require('mongoose');
 
 const song = new mongoose.Schema({
-    songName:  {
+    _id: { 
+        type: String,
+        required: true,
+    },
+    songName: {
         type: String,
         required: true,
         max: 255,
         min: 1
     },
-    songID: {
+    songPath: {
         type: String,
         required: false
     }
-}, { _id : false })
+})
 
 module.exports = mongoose.model('Song', song);

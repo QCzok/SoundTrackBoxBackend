@@ -12,7 +12,6 @@ var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var posts = require('./routes/posts');
 var media = require('./routes/media');
-const { db } = require('./model/Song');
 
 var app = express();
 

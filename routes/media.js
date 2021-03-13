@@ -7,6 +7,7 @@ const Playlist = require('../model/Playlist');
 const Song = require('../model/Song');
 var mongoose = require('mongoose');
 const ObjectID = require('mongodb').ObjectID;
+const fs = require('fs');
 
 
 router.get('/loadMusicCollection', verify, async function (req, res, next) {
@@ -46,16 +47,19 @@ router.post('/addPlaylist', verify, async function (req, res, next) {
 
 router.post('/addSong', verify, uploadSong, async function (req, res, next) {
 
+    console.log(req.body.playlistName)
+
     try {
         const song = new Song({
+            _id: req.songID,
             songName: req.body.songName,
-            songID: req.songID
+            songPath: req.filePath,
         });
-
+        console.log(song);
         await User.findOneAndUpdate(
             {
                 _id: req.user,
-                "musicCollection.name": req.playlistName
+                "musicCollection.name": req.body.playlistName
             },
             {
                 $addToSet:
@@ -127,30 +131,30 @@ router.post('/deletePlaylist', verify, async function (req, res, next) {
 });
 
 
-router.get('/getSongFile', (req, res, next) => {
+router.get('/getSongFile', async (req, res, next) => {
+    var entry;
+    var songPath;
+    await User.findOne({ 
+            "musicCollection.songList._id": req.query.songID
+        }, {"musicCollection.songList.$": 1, _id: 0})
+            .then((result) => entry = result);
+    entry.musicCollection.map((playlist) => {
+        playlist.songList.map((song) => {
+            if(song._id === req.query.songID){
+                songPath=song.songPath;
+            }
+        })
+    })
+
     try {
-        var trackID = ObjectID(req.query.songID);
+        //var trackID = ObjectID(req.query.songID);
         res.set('content-type', 'audio/mp3');
         res.set('accept-ranges', 'bytes');
 
-        let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: 'tracks'
-        });
+        let downloadStream = fs.createReadStream(songPath);
 
-        let downloadStream = bucket.openDownloadStream(trackID);
+        downloadStream.pipe(res);
 
-        downloadStream.on('data', (chunk) => {
-            res.write(chunk);
-        });
-
-        downloadStream.on('error', () => {
-            res.sendStatus(404);
-            console.log('an error occured');
-        });
-
-        downloadStream.on('end', () => {
-            res.end();
-        });
     } catch (error) {
         console.log(error);
     }
