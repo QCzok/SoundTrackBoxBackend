@@ -2,19 +2,21 @@ var express = require('express');
 var router = express.Router();
 const User = require('../model/User');
 const jwt = require('jsonwebtoken');
-const {registerValidation, loginValidation} = require('../validation');
+const { registerValidation, loginValidation } = require('../validation');
 const bcrypt = require('bcryptjs');
 const SecretCode = require('../model/SecretCode');
 var nodemailer = require('nodemailer');
+var verify = require('../verifyToken');
+const fs = require('fs');
 
 router.post('/register', async function (req, res, next) {
 
     try {
-        const {error} = registerValidation(req.body);
-        if(error) return res.status(400).send(error.details[0].message);
+        const { error } = registerValidation(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
 
-        const userExists = await User.findOne({email: req.body.email});
-        if(userExists) return res.status(400).send('Email already exists')
+        const userExists = await User.findOne({ email: req.body.email });
+        if (userExists) return res.status(400).send('Email already exists')
 
         const salt = await bcrypt.genSalt(10);
         const hashPassword = await bcrypt.hash(req.body.password, salt);
@@ -27,7 +29,7 @@ router.post('/register', async function (req, res, next) {
 
         const secretCode = new SecretCode({
             email: req.body.email,
-            code: jwt.sign({_id : user._id}, process.env.TOKEN_SECRET),
+            code: jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET),
         });
 
         await user.save();
@@ -44,7 +46,7 @@ router.post('/register', async function (req, res, next) {
 
         var link = "http://localhost:3002/user/verify/" + user.email + "/" + secretCode.code;
 
-        
+
         // send email
         await transporter.sendMail({
             from: 'norely@soundtrackbox.com',
@@ -53,7 +55,7 @@ router.post('/register', async function (req, res, next) {
             html: 'Please click <a href="' + link + '"> here </a> to activate your account.'
         });
 
-        res.send({user: user.id})
+        res.send({ user: user.id })
     } catch (error) {
         res.status(400).send(error);
         console.log(error);
@@ -61,19 +63,19 @@ router.post('/register', async function (req, res, next) {
 });
 
 router.post('/login', async (req, res) => {
-    const {error} = loginValidation(req.body);
-    if(error) return res.status(400).send(error.details[0].message);
+    const { error } = loginValidation(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
 
-    const user = await User.findOne({email: req.body.email});
+    const user = await User.findOne({ email: req.body.email });
     console.log(user);
-    if(!user) return res.status(400).send('Email or password is wrong')
+    if (!user) return res.status(400).send('Email or password is wrong')
 
-    if(user.status === "pending") return res.status(401).send('Email not confirmed')
+    if (user.status === "pending") return res.status(401).send('Email not confirmed')
 
     const validPass = await bcrypt.compare(req.body.password, user.password);
-    if(!validPass) return res.status(400).send('Invalid password');
+    if (!validPass) return res.status(400).send('Invalid password');
 
-    const token = jwt.sign({_id : user._id}, process.env.TOKEN_SECRET);
+    const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
     console.log(token);
 
@@ -83,9 +85,9 @@ router.post('/login', async (req, res) => {
 
 router.get('/verify/:mail/:token', async (req, res) => {
 
-    const secret = await SecretCode.findOne({email: req.params.mail});
-    if(req.params.token === secret.code){
-        await User.findOneAndUpdate({email: req.params.mail},
+    const secret = await SecretCode.findOne({ email: req.params.mail });
+    if (req.params.token === secret.code) {
+        await User.findOneAndUpdate({ email: req.params.mail },
             {
                 status: "approved",
             });
@@ -94,5 +96,18 @@ router.get('/verify/:mail/:token', async (req, res) => {
     res.send('OK');
 });
 
+router.post('/deleteUser', verify, async (req, res) => {
+    console.log(req.user)
+    User.deleteOne({ _id: req.user._id}, function (err) {
+        if (err) console.log(err);
+    })
+    try {
+        var folderName = process.env.FOLDER_BASE_PATH + req.user._id;
+        fs.rmdirSync(folderName, { recursive: true });
+    } catch (error) {
+        next(error);
+    }
+    res.send('User deletet');
+});
 
 module.exports = router;

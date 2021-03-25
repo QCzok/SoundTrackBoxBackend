@@ -5,8 +5,6 @@ var uploadSong = require('../uploadSong');
 const User = require('../model/User');
 const Playlist = require('../model/Playlist');
 const Song = require('../model/Song');
-var mongoose = require('mongoose');
-const ObjectID = require('mongodb').ObjectID;
 const fs = require('fs');
 
 
@@ -78,20 +76,30 @@ router.post('/addSong', verify, uploadSong, async function (req, res, next) {
 
 router.post('/deleteSong', verify, async function (req, res, next) {
     try {
-        let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: 'tracks'
-        });
-        bucket.delete(ObjectID(req.body.songID));
+        var entry;
+        var songPath;
+        await User.findOne({
+            "musicCollection.songList._id": req.body.songID
+        }, { "musicCollection.songList.$": 1, _id: 0 })
+            .then((result) => entry = result);
+        entry.musicCollection.map((playlist) => {
+            playlist.songList.map((song) => {
+                if (song._id === req.body.songID) {
+                    songPath = song.songPath;
+                }
+            })
+        })
+        fs.unlinkSync(songPath)
 
         await User.findOneAndUpdate(
             {
                 _id: req.user,
-                "musicCollection.name": req.body.playlistName
+                "musicCollection._id": req.body.playlistID
             },
             {
                 $pull:
                 {
-                    "musicCollection.$.songList": { songName: req.body.songName }
+                    "musicCollection.$.songList": { _id: req.body.songID }
                 }
             },
             { returnOriginal: false })
@@ -104,13 +112,8 @@ router.post('/deleteSong', verify, async function (req, res, next) {
 
 router.post('/deletePlaylist', verify, async function (req, res, next) {
     try {
-        let bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: 'tracks'
-        });
-
-        req.body.songList.forEach(element => {
-            bucket.delete(ObjectID(element.songID));
-        });
+        var folderName = process.env.FOLDER_BASE_PATH + req.user._id + '/' + req.body.playlistID
+        fs.rmdirSync(folderName, { recursive: true });
 
         await User.findOneAndUpdate(
             {
@@ -119,7 +122,7 @@ router.post('/deletePlaylist', verify, async function (req, res, next) {
             {
                 $pull:
                 {
-                    musicCollection: { name: req.body.playlistName }
+                    musicCollection: { _id: req.body.playlistID }
                 }
             },
             { returnOriginal: false })
@@ -132,31 +135,36 @@ router.post('/deletePlaylist', verify, async function (req, res, next) {
 
 
 router.get('/getSongFile', async (req, res, next) => {
-    var entry;
-    var songPath;
-    await User.findOne({ 
-            "musicCollection.songList._id": req.query.songID
-        }, {"musicCollection.songList.$": 1, _id: 0})
-            .then((result) => entry = result);
-    entry.musicCollection.map((playlist) => {
-        playlist.songList.map((song) => {
-            if(song._id === req.query.songID){
-                songPath=song.songPath;
-            }
-        })
-    })
 
     try {
-        //var trackID = ObjectID(req.query.songID);
-        res.set('content-type', 'audio/mp3');
-        res.set('accept-ranges', 'bytes');
+        var entry;
+        var songPath;
+        await User.findOne({
+            "musicCollection.songList._id": req.query.songID
+        }, { "musicCollection.songList.$": 1, _id: 0 })
+            .then((result) => entry = result);
+        if (entry) {
+            entry.musicCollection.map((playlist) => {
+                playlist.songList.map((song) => {
+                    if (song._id === req.query.songID) {
+                        songPath = song.songPath;
+                    }
+                })
+            })
 
-        let downloadStream = fs.createReadStream(songPath);
+            res.set('content-type', 'audio/mp3');
+            res.set('accept-ranges', 'bytes');
 
-        downloadStream.pipe(res);
+            let downloadStream = fs.createReadStream(songPath);
+
+            downloadStream.pipe(res);
+        } else {
+        res.send('no song to play');
+        }
 
     } catch (error) {
         console.log(error);
+        next(error);
     }
 })
 
