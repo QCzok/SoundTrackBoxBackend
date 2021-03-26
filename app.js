@@ -8,7 +8,6 @@ var dotenv = require('dotenv');
 var cors = require('cors');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var posts = require('./routes/posts');
 var media = require('./routes/media');
@@ -40,7 +39,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/user', authRouter);
 app.use('/api/posts', posts);
 app.use('/media', media);
