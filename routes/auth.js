@@ -36,11 +36,11 @@ router.post('/register', async function (req, res, next) {
         await secretCode.save();
 
         const transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
+            host: 'smtp.elasticemail.com',
+            port: 2525,
             auth: {
-                user: 'hallie.wehner@ethereal.email',
-                pass: 'T38pV586fwgZzpNQ3y'
+                user: 'jan.czok@outlook.de',
+                pass: 'B2F8D3A7D2090543105EE4D92D1409DDDFB8'
             }
         });
 
