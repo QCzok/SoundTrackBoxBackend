@@ -48,7 +48,7 @@ router.post('/register', async function (req, res, next) {
 
         // send email
         await transporter.sendMail({
-            from: 'norely@soundtrackbox.com',
+            from: 'jan.czok@outlook.de',
             to: req.body.email,
             subject: 'Test Email Subject',
             html: 'Please click <a href="' + link + '"> here </a> to activate your account.'
