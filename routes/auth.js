@@ -44,8 +44,7 @@ router.post('/register', async function (req, res, next) {
             }
         });
 
-        var link = "http://localhost:3002/user/verify/" + user.email + "/" + secretCode.code;
-
+        var link = process.env.HOST + user.email + "/" + secretCode.code;
 
         // send email
         await transporter.sendMail({

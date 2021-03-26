@@ -76,20 +76,20 @@ router.post('/addSong', verify, uploadSong, async function (req, res, next) {
 
 router.post('/deleteSong', verify, async function (req, res, next) {
     try {
-        var entry;
         var songPath;
         await User.findOne({
             "musicCollection.songList._id": req.body.songID
         }, { "musicCollection.songList.$": 1, _id: 0 })
-            .then((result) => entry = result);
-        entry.musicCollection.map((playlist) => {
-            playlist.songList.map((song) => {
-                if (song._id === req.body.songID) {
-                    songPath = song.songPath;
-                }
-            })
-        })
-        fs.unlinkSync(songPath)
+            .then((result) => result.musicCollection.map((playlist) => {
+                playlist.songList.map((song) => {
+                    if (song._id === req.body.songID) {
+                        songPath = song.songPath;
+                    }
+                })
+            }));
+        if (fs.existsSync(songPath)) {
+            fs.unlinkSync(songPath);
+        }
 
         await User.findOneAndUpdate(
             {
@@ -135,36 +135,30 @@ router.post('/deletePlaylist', verify, async function (req, res, next) {
 
 
 router.get('/getSongFile', async (req, res, next) => {
-
     try {
-        var entry;
         var songPath;
         await User.findOne({
             "musicCollection.songList._id": req.query.songID
         }, { "musicCollection.songList.$": 1, _id: 0 })
-            .then((result) => entry = result);
-        if (entry) {
-            entry.musicCollection.map((playlist) => {
+            .then((result) => result.musicCollection.map((playlist) => {
                 playlist.songList.map((song) => {
                     if (song._id === req.query.songID) {
                         songPath = song.songPath;
                     }
                 })
-            })
+            }));
 
+        if (fs.existsSync(songPath)) {
             res.set('content-type', 'audio/mp3');
             res.set('accept-ranges', 'bytes');
-
             let downloadStream = fs.createReadStream(songPath);
-
             downloadStream.pipe(res);
         } else {
-        res.send('no song to play');
+            res.send('song does not exist');
         }
-
     } catch (error) {
         console.log(error);
-        next(error);
+        res.send('error during song stream');
     }
 })
 
