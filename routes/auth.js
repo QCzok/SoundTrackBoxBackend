@@ -44,7 +44,7 @@ router.post('/register', async function (req, res, next) {
             }
         });
 
-        var link = process.env.HOST + user.email + "/" + secretCode.code;
+        var link = process.env.HOST + '/user/verify/' + user.email + "/" + secretCode.code;
 
         // send email
         await transporter.sendMail({

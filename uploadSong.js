@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
         const storage = multer.memoryStorage()
         const upload = multer({ storage: storage, limits: { fields: 4, fileSize: 16000000, files: 1} });
         upload.single('track')(req, res, (err) => {
-            var folderPath = process.env.FOLDER_BASE_PATH + req.user._id + '/' + req.body.playlistID;
+            var folderPath = '/audio/' + req.user._id + '/' + req.body.playlistID;
             req.songID = new ObjectID();
             req.filePath = folderPath + '/' + req.songID + '.mp3';
             try {
