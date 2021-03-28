@@ -51,7 +51,7 @@ router.post('/register', async function (req, res, next) {
             from: 'jan.czok@outlook.de',
             to: req.body.email,
             subject: 'Test Email Subject',
-            html: 'Please click <a href="' + link + '"> here </a> to activate your account.'
+            html: 'Please click <a href="' + link + '"> here </a> to activate your account. If you the link is not working, copy and paster the following to your browser: ' + link,
         });
 
         res.send({ user: user.id })
@@ -92,7 +92,7 @@ router.get('/verify/:mail/:token', async (req, res) => {
             });
     }
 
-    res.send('OK');
+    res.send('<h1>SoundtrackBox<h1> Your account has been approved. You can now loggin with your username and password.');
 });
 
 router.post('/deleteUser', verify, async (req, res) => {
