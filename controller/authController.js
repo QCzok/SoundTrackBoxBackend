@@ -75,10 +75,11 @@ exports.verifyToken = async (req, res, next) => {
                 {
                     status: "approved",
                 });
+            res.send(MAIL_MESSAGE);
         } else {
             console.log('token does not match');
+            res.send('user could not be found');
         }
-        res.send(MAIL_MESSAGE);
     } catch (error) {
         console.log(error);
         next(error);
@@ -87,7 +88,7 @@ exports.verifyToken = async (req, res, next) => {
 
 exports.deleteUser = async (req, res, next) => {
     try {
-        User.deleteOne({ _id: req.user._id}, function (err) {
+        User.deleteOne({ _id: req.user._id }, function (err) {
             if (err) console.log(err);
         })
         try {
