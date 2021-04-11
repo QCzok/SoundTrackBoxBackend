@@ -75,6 +75,8 @@ exports.verifyToken = async (req, res, next) => {
                 {
                     status: "approved",
                 });
+        } else {
+            console.log('token does not match');
         }
         res.send(MAIL_MESSAGE);
     } catch (error) {
