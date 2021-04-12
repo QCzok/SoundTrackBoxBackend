@@ -1,1 +1,0 @@
-exports.MAIL_MESSAGE = '<h1>SoundtrackBox<h1> Your account has been approved. You can now log in with your username and password.'

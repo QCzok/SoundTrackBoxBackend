@@ -1,4 +1,3 @@
-const express = require('express');
 const User = require('../model/User');
 const jwt = require('jsonwebtoken');
 const { registerValidation, loginValidation } = require('../validation');
@@ -6,7 +5,6 @@ const bcrypt = require('bcryptjs');
 const SecretCode = require('../model/SecretCode');
 var nodemailer = require('nodemailer');
 const fs = require('fs');
-const { MAIL_MESSAGE } = require('../constants');
 
 exports.register = async (req, res, next) => {
     try {
@@ -75,10 +73,16 @@ exports.verifyToken = async (req, res, next) => {
                 {
                     status: "approved",
                 });
-            res.send(MAIL_MESSAGE);
+            res.render('verify', {
+                title: "Sound Track Box",
+                isVerified: true,
+            })
         } else {
             console.log('token does not match');
-            res.send('user could not be found');
+            res.render('verify', {
+                title: "Sound Track Box",
+                isVerified: false,
+            })
         }
     } catch (error) {
         console.log(error);

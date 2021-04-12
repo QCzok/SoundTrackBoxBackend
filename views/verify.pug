@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  
+  if isVerified
+    p Your account has been approved. You can now log in with your username and password.
+    a(href="https://qczok.github.io/") SoundTrackBox
+  else
+    p You could not be verified. Please contact support.
+    ol
+    li Name: Jan Czok
+    li Mail Adress: jan.czok@outlook.de
