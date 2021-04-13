@@ -1,3 +1,4 @@
+const config = require('../config/default');
 const User = require('../model/User');
 const jwt = require('jsonwebtoken');
 const { registerValidation, loginValidation } = require('../validation');
@@ -5,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const SecretCode = require('../model/SecretCode');
 var nodemailer = require('nodemailer');
 const fs = require('fs');
+var pug = require('pug');
+var path = require('path');
 
 exports.register = async (req, res, next) => {
     try {
@@ -119,14 +122,28 @@ exports.sendMail = async (req, res, next) => {
             }
         });
 
-        var link = process.env.HOST + '/user/verify/' + req.user.email + "/" + req.secretCode.code;
+        var verificationLink = config.app.host + '/user/verify/' + req.user.email + "/" + req.secretCode.code;
+
+        console.log(verificationLink);
+
+        var template = pug.compileFile(path.join(__dirname, "../views/mail.pug"));
+        output = template({
+            title: "Sound Track Box",
+            link: verificationLink,
+        });
 
         // send email
         await transporter.sendMail({
             from: 'jan.czok@outlook.de',
             to: req.body.email,
             subject: 'Test Email Subject',
-            html: 'Please click <a href="' + link + '"> here </a> to activate your account. If you the link is not working, copy and paster the following to your browser: ' + link,
+            html: output,
+            /*
+            html: render('mail', {
+                title: "Sound Track Box",
+                link: link,
+            })
+            */
         });
         console.log('outgoing mail');
         res.send({ user: req.user.id })

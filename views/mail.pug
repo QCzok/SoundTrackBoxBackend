@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+  p Please click the following link to activate your account:
+
+  a(href=link) activate
+
+  p If the link is not working, copy and paste the following text to your browser:
+  p #{link}
+
+  p If you didn't register at SoundTrackBox, then ignore this mail.
