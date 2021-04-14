@@ -1,4 +1,5 @@
 const express = require('express');
+const config = require('../config/default');
 const User = require('../model/User');
 const Song = require('../model/Song');
 const Playlist = require('../model/Playlist');
@@ -78,7 +79,7 @@ exports.addSongTrackFile = async (req, res, next) => {
         const storage = multer.memoryStorage()
         const upload = multer({ storage: storage, limits: { fields: 4, fileSize: 16000000, files: 1} });
         upload.single('track')(req, res, (err) => {
-            var folderPath = '/app/audio/' + req.user._id + '/' + req.body.playlistID;
+            var folderPath = config.app.folderPath + req.user._id + '/' + req.body.playlistID;
             req.songID = new ObjectID();
             req.filePath = folderPath + '/' + req.songID + '.mp3';
             try {

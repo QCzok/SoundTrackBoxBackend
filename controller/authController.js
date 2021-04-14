@@ -136,7 +136,7 @@ exports.sendMail = async (req, res, next) => {
         await transporter.sendMail({
             from: 'jan.czok@outlook.de',
             to: req.body.email,
-            subject: 'Test Email Subject',
+            subject: 'SoundTrackBox account verification',
             html: output,
             /*
             html: render('mail', {

@@ -1,15 +1,17 @@
 // config.js
-const env = process.env.NODE_ENV; // 'dev' or 'production'
+const env = process.env.NODE_ENV || production; // 'dev' or 'production'
 
 const dev = {
   app: {
-    host: "http://localhost:3001"
+    host: "http://localhost:3001",
+    folderPath: '/home/dci/Documents/SoundTrackBox/audio/',
    }
 };
 
 const production = {
  app: {
-  host: "https://soundtrackbox.herokuapp.com"
+  host: "https://soundtrackbox.herokuapp.com",
+  folderPath: '/app/audio/',
  }
 };
 
