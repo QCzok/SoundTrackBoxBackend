@@ -13,8 +13,8 @@ router.post('/addPlaylist', verify, addPlaylist);
 
 router.post('/addSong', verify, addSongTrackFile, addSong);
 
-router.post('/deleteSong', verify, deleteSong);
+router.delete('/deleteSong', verify, deleteSong);
 
-router.post('/deletePlaylist', verify, deletePlaylist);
+router.delete('/deletePlaylist', verify, deletePlaylist);
 
 module.exports = router;

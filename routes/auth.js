@@ -10,6 +10,6 @@ router.post('/login', login);
 
 router.get('/verify/:mail/:token', verifyToken);
 
-router.post('/deleteUser', verify, deleteUser);
+router.delete('/deleteUser', verify, deleteUser);
 
 module.exports = router;

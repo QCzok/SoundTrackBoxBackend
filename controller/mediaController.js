@@ -110,11 +110,11 @@ exports.deleteSong = async (req, res, next) => {
     try {
         var songPath;
         await User.findOne({
-            "musicCollection.songList._id": req.body.songID
+            "musicCollection.songList._id": req.header('songID')
         }, { "musicCollection.songList.$": 1, _id: 0 })
             .then((result) => result.musicCollection.map((playlist) => {
                 playlist.songList.map((song) => {
-                    if (song._id === req.body.songID) {
+                    if (song._id === req.header('songID')) {
                         songPath = song.songPath;
                     }
                 })
@@ -126,12 +126,12 @@ exports.deleteSong = async (req, res, next) => {
         await User.findOneAndUpdate(
             {
                 _id: req.user,
-                "musicCollection._id": req.body.playlistID
+                "musicCollection._id": req.header('playlistID')
             },
             {
                 $pull:
                 {
-                    "musicCollection.$.songList": { _id: req.body.songID }
+                    "musicCollection.$.songList": { _id: req.header('songID') }
                 }
             },
             { returnOriginal: false })
@@ -169,7 +169,7 @@ exports.addPlaylist = async (req, res, next) => {
 
 exports.deletePlaylist = async (req, res, next) => {
     try {
-        var folderName = process.env.FOLDER_BASE_PATH + req.user._id + '/' + req.body.playlistID
+        var folderName = process.env.FOLDER_BASE_PATH + req.user._id + '/' + req.header('playlistID')
         fs.rmdirSync(folderName, { recursive: true });
 
         await User.findOneAndUpdate(
@@ -179,7 +179,7 @@ exports.deletePlaylist = async (req, res, next) => {
             {
                 $pull:
                 {
-                    musicCollection: { _id: req.body.playlistID }
+                    musicCollection: { _id: req.header('playlistID') }
                 }
             },
             { returnOriginal: false })
