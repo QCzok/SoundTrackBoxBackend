@@ -89,7 +89,10 @@ exports.verifyToken = async (req, res, next) => {
         }
     } catch (error) {
         console.log(error);
-        next(error);
+        res.render('verify', {
+            title: "Sound Track Box",
+            isVerified: false,
+        })
     }
 }
 
