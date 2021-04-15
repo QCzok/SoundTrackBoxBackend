@@ -1,4 +1,5 @@
 var createError = require('http-errors');
+const config = require('./config/default');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -16,6 +17,7 @@ var app = express();
 dotenv.config();
 
 // connect to db
+db_connect_link = config.app.db_connect_link;
 try {
   mongoose.connect(process.env.DB_CONNECT, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false}).then(
     () => { console.log('connected to mongodb');},
